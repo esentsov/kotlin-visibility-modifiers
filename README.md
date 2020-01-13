@@ -1,9 +1,13 @@
 ## Kotlin Visibility Modifiers
 
-Are you missing package visibility in kotlin? Me too!
+Are you missing package private visibility in kotlin?
 
 This repository is to provide `PackagePrivate` and `FilePrivate` annotations
-as well as necessary lint checks.
+as well as necessary lint checks. 
+
+`@PackagePrivate` annotation is a replacement for java package-private visibility. 
+`@FilePrivate` is a new thing for java/kotlin. As the name says annotatated members 
+can be accessed in the same file they are declared.
 
 ### Usage
 
