@@ -4,13 +4,13 @@ plugins {
     kotlin("jvm")
 }
 
-val lintVersion = "26.5.0"
+val lintVersion = "27.0.0-beta04"
 
 dependencies {
     compileOnly("com.android.tools.lint:lint-api:$lintVersion")
     compileOnly("com.android.tools.lint:lint-checks:$lintVersion")
 
-    testImplementation("junit:junit:4.12")
+    testImplementation("junit:junit:4.13")
     testImplementation("com.android.tools.lint:lint:$lintVersion")
     testImplementation("com.android.tools.lint:lint-tests:$lintVersion")
     testImplementation("com.android.tools:testutils:$lintVersion")

@@ -9,6 +9,7 @@ import com.android.tools.lint.detector.api.Issue
  */
 class KotlinVisibilityIssueRegistry : IssueRegistry() {
     override val api: Int = CURRENT_API
+    override val minApi: Int = 5
     override val issues: List<Issue> = listOf(PrivateMembersUsageDetector.FilePrivateIssue, PrivateMembersUsageDetector.PackagePrivateIssue)
 }
 

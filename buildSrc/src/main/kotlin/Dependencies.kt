@@ -1,4 +1,4 @@
-const val kotlinVersion = "1.3.50"
+const val kotlinVersion = "1.3.72"
 
 object AndroidSdk {
     const val min = 14
