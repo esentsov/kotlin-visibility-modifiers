@@ -548,6 +548,65 @@ class PackagePrivateMembersUsageDetectorTest {
         )
     }
 
+    @Test
+    fun `access annotation on class`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    annotation class PrivateAnnotation
+                """
+            ,
+            """
+                    @PrivateAnnotation
+                    class Test()
+                """
+        )
+    }
+
+    @Test
+    fun `access annotation on fun and property`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    annotation class PrivateAnnotation
+                """
+            ,
+            """
+                    class Test(){
+                        @PrivateAnnotation
+                        val property:Int = 0
+                        
+                        @PrivateAnnotation
+                        fun test(){}
+                    }
+                """,
+            2
+        )
+    }
+
+    @Test
+    fun `access annotation on constructor`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    annotation class PrivateAnnotation
+                """
+            ,
+            """
+                    @PrivateAnnotation
+                    val property:Int = 0
+                    
+                    @PrivateAnnotation
+                    fun test(){}              
+                """,
+            2
+        )
+    }
+
+
     private fun doCheck(declaration: String, usage: String, errorCount: Int = 1) {
         lint()
             .files(

@@ -443,6 +443,79 @@ class FilePrivateMembersUsageDetectorTest {
         )
     }
 
+    @Test
+    fun `access annotation on class`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @FilePrivate
+                    annotation class PrivateAnnotation
+                """
+            ,
+            """
+                    @PrivateAnnotation
+                    class Test()
+                """
+        )
+    }
+
+    @Test
+    fun `access annotation on fun and property`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @FilePrivate
+                    annotation class PrivateAnnotation
+                """
+            ,
+            """
+                    class Test(){
+                        @PrivateAnnotation
+                        val property:Int = 0
+                        
+                        @PrivateAnnotation
+                        fun test(){}
+                    }
+                """,
+            2
+        )
+    }
+
+    @Test
+    fun `access annotation on constructor`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @FilePrivate
+                    annotation class PrivateAnnotation
+                """
+            ,
+            """
+                    @PrivateAnnotation
+                    val property:Int = 0
+                    
+                    @PrivateAnnotation
+                    fun test(){}              
+                """,
+            2
+        )
+    }
+
+    @Test
+    fun `access annotation on top-level`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @FilePrivate
+                    annotation class PrivateAnnotation
+                """
+            ,
+            """
+                    class Test @PrivateAnnotation constructor ()
+                """
+        )
+    }
+
     private fun doCheck(declaration: String, usage: String, errorCount: Int = 1) {
         lint()
             .files(

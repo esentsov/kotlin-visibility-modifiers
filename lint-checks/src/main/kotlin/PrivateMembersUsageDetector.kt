@@ -22,10 +22,14 @@ class PrivateMembersUsageDetector : Detector(), UastScanner {
      * It also resolves property assignment expressions into getter call, checking for getter annotations
      */
     override fun getApplicableUastTypes(): List<Class<out UElement>>? =
-        listOf(UExpression::class.java, UParameter::class.java)
+        listOf(UExpression::class.java, UParameter::class.java, UAnnotation::class.java)
 
     override fun createUastHandler(context: JavaContext): UElementHandler? =
         object : UElementHandler() {
+
+            override fun visitAnnotation(node: UAnnotation) {
+                check(node, node.resolve())
+            }
 
             override fun visitParameter(node: UParameter) {
                 check(node, (node.typeReference?.type as? PsiClassReferenceType)?.resolve())
