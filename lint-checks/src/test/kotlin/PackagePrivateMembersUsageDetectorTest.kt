@@ -530,6 +530,23 @@ class PackagePrivateMembersUsageDetectorTest {
         )
     }
 
+    @Test
+    fun `access object property`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    object PrivateObject{
+                        val property: Int = 0
+                    }
+                """
+            ,
+            """
+                    val test = PrivateObject.property
+                """,
+            2 // object ref, property ref
+        )
+    }
 
     private fun doCheck(declaration: String, usage: String, errorCount: Int = 1) {
         lint()
