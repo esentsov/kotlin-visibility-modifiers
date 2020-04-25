@@ -4,6 +4,7 @@ import com.android.tools.lint.client.api.UElementHandler
 import com.android.tools.lint.detector.api.*
 import com.android.tools.lint.detector.api.Detector.UastScanner
 import com.intellij.psi.PsiElement
+import com.intellij.psi.impl.source.PsiClassReferenceType
 import org.jetbrains.kotlin.asJava.elements.KtLightDeclaration
 import org.jetbrains.uast.*
 
@@ -20,10 +21,15 @@ class PrivateMembersUsageDetector : Detector(), UastScanner {
      * The [UastScanner] api seems to not cover references to properties, declared in primary constructors.
      * It also resolves property assignment expressions into getter call, checking for getter annotations
      */
-    override fun getApplicableUastTypes(): List<Class<out UElement>>? = listOf(UExpression::class.java)
+    override fun getApplicableUastTypes(): List<Class<out UElement>>? =
+        listOf(UExpression::class.java, UParameter::class.java)
 
     override fun createUastHandler(context: JavaContext): UElementHandler? =
         object : UElementHandler() {
+
+            override fun visitParameter(node: UParameter) {
+                check(node, (node.typeReference?.type as? PsiClassReferenceType)?.resolve())
+            }
 
             override fun visitExpression(node: UExpression) {
                 if (node is UQualifiedReferenceExpression) {
@@ -31,7 +37,11 @@ class PrivateMembersUsageDetector : Detector(), UastScanner {
                     // e.g. instance.value will be handled as just value
                     return
                 }
-                (node.tryResolve() as? KtLightDeclaration<*, *>)?.let { resolved ->
+                check(node, node.tryResolve())
+            }
+
+            private fun check(node: UElement, resolved: PsiElement?) {
+                (resolved as? KtLightDeclaration<*, *>)?.let {
                     if (resolved.isAnnotatedWith(filePrivateAnnotationName) && areInDifferentFiles(node, resolved)) {
                         context.report(FilePrivateIssue, node, context.getLocation(node), "Usage of private api")
                     }
@@ -42,13 +52,13 @@ class PrivateMembersUsageDetector : Detector(), UastScanner {
             }
         }
 
-    private fun areInDifferentFiles(node: UExpression, resolved: PsiElement): Boolean {
+    private fun areInDifferentFiles(node: UElement, resolved: PsiElement): Boolean {
         val declarationFile = resolved.containingFile.virtualFile.path
         val referenceFile = node.getContainingUFile()?.getIoFile()?.absolutePath
         return referenceFile != null && declarationFile != referenceFile
     }
 
-    private fun areInDifferentPackages(context: JavaContext, node: UExpression, resolved: KtLightDeclaration<*, *>): Boolean {
+    private fun areInDifferentPackages(context: JavaContext, node: UElement, resolved: KtLightDeclaration<*, *>): Boolean {
         val declarationPackage = context.evaluator.getPackage(resolved)
         val referencePackage = context.evaluator.getPackage(node)
         return declarationPackage?.qualifiedName != referencePackage?.qualifiedName

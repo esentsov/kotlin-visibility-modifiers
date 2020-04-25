@@ -371,8 +371,167 @@ class PackagePrivateMembersUsageDetectorTest {
         )
     }
 
+    @Test
+    fun `access class as a function parameter`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass
+                """
+            ,
+            """
+                    fun test(instance:PrivateClass){}
+                """
+        )
+    }
 
-    private fun doCheck(declaration: String, usage: String) {
+    @Test
+    fun `access class as a constructor parameter`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass
+                """
+            ,
+            """
+                    class Test(property: PrivateClass)
+                """
+        )
+    }
+
+    @Test
+    fun `access class as a constructor property`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass
+                """
+            ,
+            """
+                    class Test(val property: PrivateClass)
+                """
+        )
+    }
+
+    @Test
+    fun `access class constructor`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass
+                """
+            ,
+            """
+                    val test = PrivateClass()
+                """,
+            2 // class ref and constructor call are counted separately
+        )
+    }
+
+    @Test
+    fun `access class property`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass{
+                        val p = 0
+                    }
+                """
+            ,
+            """
+                    fun test(instance:PrivateClass){
+                        instance.p
+                    }
+                """,
+            2 // class ref and property access
+        )
+    }
+
+    @Test
+    fun `access class function`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass{
+                        fun test(){}
+                    }
+                """
+            ,
+            """
+                    fun test(instance:PrivateClass){
+                        instance.test()
+                    }
+                """,
+            2 // class ref and fun call
+        )
+    }
+
+    @Test
+    fun `access companion object`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass{
+                        companion object{
+                            const val property = 0
+                        }
+                    }
+                """
+            ,
+            """
+                    val test = PrivateClass.property
+                """,
+            2 // class ref and property access
+        )
+    }
+
+    @Test
+    fun `access inner class`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass{
+                        class InnerClass()
+                    }
+                """
+            ,
+            """
+                    val test = PrivateClass.InnerClass()
+                """,
+            3 // class ref, inner class ref, inner class constructor call
+        )
+    }
+
+    @Test
+    fun `access inner class property`() {
+        //language=kotlin
+        doCheck(
+            """
+                    @PackagePrivate
+                    class PrivateClass{
+                        class InnerClass{
+                            val property: Int = 0
+                        }
+                    }
+                """
+            ,
+            """
+                    val test = PrivateClass.InnerClass().property
+                """,
+            4 // class ref, inner class ref, inner class constructor, inner class property
+        )
+    }
+
+
+    private fun doCheck(declaration: String, usage: String, errorCount: Int = 1) {
         lint()
             .files(
                 kotlin(annotationDeclaration),
@@ -389,9 +548,10 @@ class PackagePrivateMembersUsageDetectorTest {
                 """
                 )
             )
+            .allowDuplicates()
             .issues(PrivateMembersUsageDetector.PackagePrivateIssue)
             .run()
-            .expectErrorCount(1)
+            .expectErrorCount(errorCount)
             .check(TestResultChecker {
                 assertTrue(it.contains("Usage of private api [PackagePrivateId]"))
             })
@@ -445,7 +605,8 @@ private const val annotationDeclaration = """
     @Target(
         CONSTRUCTOR,
         FUNCTION,
-        PROPERTY
+        PROPERTY,
+        CLASS
     )
     annotation class PackagePrivate
 """

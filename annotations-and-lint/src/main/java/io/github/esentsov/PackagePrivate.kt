@@ -9,7 +9,8 @@ import kotlin.annotation.AnnotationTarget.*
 @Target(
     CONSTRUCTOR,
     FUNCTION,
-    PROPERTY
+    PROPERTY,
+    CLASS
 )
 @MustBeDocumented
 annotation class PackagePrivate
