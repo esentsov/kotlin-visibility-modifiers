@@ -427,8 +427,7 @@ class PackagePrivateMembersUsageDetectorTest {
             ,
             """
                     val test = PrivateClass()
-                """,
-            2 // class ref and constructor call are counted separately
+                """
         )
     }
 
@@ -506,7 +505,7 @@ class PackagePrivateMembersUsageDetectorTest {
             """
                     val test = PrivateClass.InnerClass()
                 """,
-            3 // class ref, inner class ref, inner class constructor call
+            2 // class ref, inner class constructor call
         )
     }
 
@@ -526,7 +525,7 @@ class PackagePrivateMembersUsageDetectorTest {
             """
                     val test = PrivateClass.InnerClass().property
                 """,
-            4 // class ref, inner class ref, inner class constructor, inner class property
+            3 // class ref, inner class constructor, inner class property
         )
     }
 
