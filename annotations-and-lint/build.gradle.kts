@@ -9,8 +9,8 @@ plugins {
 }
 
 object Version {
-    const val name = "1.0.0"
-    const val code = 1
+    const val name = "1.1.0"
+    const val code = 2
 }
 
 android {
